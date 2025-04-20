@@ -21,7 +21,7 @@ export const CreateUserController = async (req, res) => {
     } catch(error){
         res.status(400).send(error.message);
     }
-}
+};
 
 export const LoginUserController = async (req, res) => {
     const error = validationResult(req);
@@ -53,4 +53,17 @@ export const LoginUserController = async (req, res) => {
     } catch (error) {
         res.status(400).send(error.message);
     }
-}
+};
+
+export const ProfileUserController = async (req, res) => {
+    try {
+      const user = await userModel.findById(req.user._id); // Use req.user._id to find the user
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
