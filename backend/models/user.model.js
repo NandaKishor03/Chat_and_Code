@@ -46,7 +46,7 @@ userSchema.methods.generateAuthToken = function () {
       _id: this._id, 
       email: this.email 
     }, process.env.JWT_SECRET, {
-      expiresIn: '1h' // Token expires in 1 hour
+      expiresIn: '24h' // Token expires in 1 hour
     });
     return token;
   } catch (error) {

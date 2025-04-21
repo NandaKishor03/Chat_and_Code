@@ -1,20 +1,20 @@
 import jwt from "jsonwebtoken";
 import qs from 'qs';
+import redisClient from "../services/redis.service.js";
 
 export const authUser = async (req, res, next) => {
   try {
     let token = req.cookies.token;
     console.log('Token from cookies:', token);
 
-    // Check if token is present in Authorization query parameter
     if (!token) {
       const queryParams = qs.parse(req.url.split('?')[1]);
       console.log('Query Parameters:', queryParams);
-      const authQueryKey = 'Authorization '; // Use the correct key with a space at the end
+      const authQueryKey = 'Authorization '; 
       const authQuery = queryParams[authQueryKey];
 
       if (authQuery) {
-        const bearerToken = authQuery.replace('Bearer ', ''); // Remove the Bearer prefix and space
+        const bearerToken = authQuery.replace('Bearer ', ''); 
         token = bearerToken;
         console.log('Extracted Token:', token);
       } else if (req.headers.authorization) {
@@ -29,6 +29,13 @@ export const authUser = async (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({ message: "Unauthorized User Token" });
+    }
+
+    const isBlackListed = await redisClient.get(token);
+
+    if (isBlackListed){ // Update the condition to check if the token is blacklisted
+      res.cookie('token', '');
+      return res.status(401).send({error:"Unauthorized User Token in BlackListed"});
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
